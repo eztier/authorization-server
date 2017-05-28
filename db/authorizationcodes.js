@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 /**
  * Authorization codes in-memory data structure which stores all of the authorization codes
  */
-let codes = Object.create(null);
+// let codes = Object.create(null);
 
 /**
  * Returns an authorization code if it finds one, otherwise returns null if one is not found.
@@ -20,7 +20,10 @@ let codes = Object.create(null);
 exports.find = (token) => {
   try {
     const id = jwt.decode(token).jti;
-    return Promise.resolve(codes[id]);
+    // return Promise.resolve(codes[id]);
+    return server.store.findHash(id)
+      .then(authCode => Promise.resolve(authCode))
+      .catch(reason => Promise.resolve(undefined));
   } catch (error) {
     return Promise.resolve(undefined);
   }
@@ -37,10 +40,13 @@ exports.find = (token) => {
  * @param   {String}  scope       - The scope (optional)
  * @returns {Promise} resolved with the saved token
  */
-exports.save = (code, clientID, redirectURI, userID, scope) => {
+exports.save = (code, clientID, redirectURI, userID, scope, server) => {
   const id = jwt.decode(code).jti;
-  codes[id] = { clientID, redirectURI, userID, scope };
-  return Promise.resolve(codes[id]);
+  // codes[id] = { clientID, redirectURI, userID, scope };
+  // return Promise.resolve(codes[id]);
+  return server.store.addToSet('codes', id)
+    .then(server.store.saveHash({ clientID, redirectURI, userID, scope }))
+    .catch(Promise.resolve(undefined));
 };
 
 /**
@@ -51,9 +57,11 @@ exports.save = (code, clientID, redirectURI, userID, scope) => {
 exports.delete = (token) => {
   try {
     const id = jwt.decode(token).jti;
-    const deletedToken = codes[id];
-    delete codes[id];
-    return Promise.resolve(deletedToken);
+    // const deletedToken = codes[id];
+    // delete codes[id];
+    // return Promise.resolve(deletedToken);
+    return server.store.removeFromSet('codes', id)
+      .then(server.store.delete(id));
   } catch (error) {
     return Promise.resolve(undefined);
   }
@@ -64,7 +72,17 @@ exports.delete = (token) => {
  * @returns {Promise} resolved with all removed authorization codes returned
  */
 exports.removeAll = () => {
-  const deletedTokens = codes;
-  codes               = Object.create(null);
-  return Promise.resolve(deletedTokens);
+  // const deletedTokens = codes;
+  // codes               = Object.create(null);
+  // return Promise.resolve(deletedTokens);
+  server.store.findAllInSet('codes')
+    .then(codes => {
+      const fn = tokenId => {
+        return server.store.removeFromSet('codes', authCode)
+          .then(server.store.delete(authCode))
+          .catch(reason => Promise.resolve(undefined));
+      };
+
+      return Promise.all(codes.map(fn));
+    });
 };

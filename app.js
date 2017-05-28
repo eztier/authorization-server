@@ -18,10 +18,6 @@ const site           = require('./site');
 const token          = require('./token');
 const user           = require('./user');
 
-// console.log('Using MemoryStore for the data store');
-// console.log('Using MemoryStore for the Session');
-// const MemoryStore = expressSession.MemoryStore;
-
 const redisClient = redis.createClient(config.port, config.host, { no_ready_check: true });
 // const redisStore = new db.RedisStore({ redis: client });
 
@@ -39,20 +35,10 @@ app.use(function(req, res, next){
 */
 
 // Session Configuration
-/*
 app.use(expressSession({
   saveUninitialized : true,
   resave            : true,
-  secret            : config.session.secret,
-  store             : new MemoryStore(),
-  key               : 'authorization.sid',
-  cookie            : { maxAge: config.session.maxAge },
-}));
-*/
-
-app.use(expressSession({
-  cookie: { path: '/',
-  httpOnly: true, maxAge:60000 },
+  cookie: { path: '/', httpOnly: true, maxAge: config.session.maxAge },
   store: new RedisStore({ client: redisClient }),
   secret: config.session.secret,
   key: 'authorization.sid'
@@ -124,6 +110,6 @@ const options = {
   cert : fs.readFileSync(path.join(__dirname, 'certs/certificate.pem')),
 };
 
-// Create our HTTPS server listening on port 4444.
-https.createServer(options, app).listen(4444);
-console.log('OAuth 2.0 Authorization Server started on port 4444');
+// Create our HTTPS server listening on port config.port.
+https.createServer(options, app).listen(config.port);
+console.log(`OAuth 2.0 Authorization Server started on port ${config.port}`);

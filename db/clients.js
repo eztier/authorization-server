@@ -37,12 +37,25 @@ const clients = [{
   trustedClient : true,
 }];
 
+const saveClient = (client, server) => {
+  return server.store.addToSet('clients', client.id)
+    .then(server.store.saveHash({ id, name, clientId, clientSecret }))
+    .then(server.store.saveHash({ clientId, id })) // For findByClientId() lookup.
+    .catch(Promise.resolve(undefined));
+};
+
+Promise.all(clients.map(saveClient))
+  .then(()=>console.log('All clients added.'));
+
 /**
  * Returns a client if it finds one, otherwise returns null if a client is not found.
  * @param   {String}   id   - The unique id of the client to find
  * @returns {Promise}  resolved promise with the client if found, otherwise undefined
  */
-exports.find = id => Promise.resolve(clients.find(client => client.id === id));
+// exports.find = id => Promise.resolve(clients.find(client => client.id === id));
+exports.find = (id, server) => server.store.findHash(id)
+  .then(client => Promise.resolve(client))
+  .catch(reason => Promise.resolve(undefined));
 
 /**
  * Returns a client if it finds one, otherwise returns null if a client is not found.
@@ -50,5 +63,8 @@ exports.find = id => Promise.resolve(clients.find(client => client.id === id));
  * @param   {Function} done     - The client if found, otherwise returns undefined
  * @returns {Promise} resolved promise with the client if found, otherwise undefined
  */
-exports.findByClientId = clientId =>
-  Promise.resolve(clients.find(client => client.clientId === clientId));
+// exports.findByClientId = clientId => Promise.resolve(clients.find(client => client.clientId === clientId));
+exports.findByClientId = (clientId, server) => server.store.findHash(clientId)
+  .then(id => server.store.findHash(id))
+  .then(client => Promise.resolve(client))
+  .catch(reason => Promise.resolve(undefined));

@@ -29,7 +29,7 @@
   },
   "scripts": {
     "lint": "eslint *.js config db test",
-    "start": "node app.js",
+    "start": "nodemon app.js --exec c:/node7/node",
     "test": "mocha test test/db test/config",
     "test:watch": "npm run test -- --watch",
     "test:integration": "mocha test/integration"
@@ -40,13 +40,14 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "es6-promisify": "^5.0.x",
     "eslint": "^3.10.x",
     "eslint-config-airbnb": "^13.0.x",
     "eslint-plugin-import": "^2.2.x",
     "eslint-plugin-jsx-a11y": "^2.2.x",
     "eslint-plugin-react": "^6.7.x",
     "mocha": "^3.2.x",
-    "es6-promisify": "^5.0.x",
+    "nodemon": "^1.11.0",
     "request": "^2.48.x",
     "sinon": "^1.17.6",
     "sinon-chai": "^2.8.0"

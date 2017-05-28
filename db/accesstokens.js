@@ -17,7 +17,7 @@ const jwt = require('jsonwebtoken');
  * @param   {String}  token - The token to decode to get the id of the access token to find.
  * @returns {Promise} resolved with the token if found, otherwise resolved with undefined
  */
-exports.find = token => {
+exports.find = (token, server) => {
   try {
     const id = jwt.decode(token).jti;
     // return Promise.resolve(tokens[id]);
@@ -57,7 +57,7 @@ exports.save = (token, expirationDate, userID, clientID, scope = 'offline_access
  * @param   {String}  token - The token to decode to get the id of the access token to delete.
  * @returns {Promise} resolved with the deleted token
  */
-exports.delete = (token) => {
+exports.delete = (token, server) => {
   try {
     const id = jwt.decode(token).jti;
     // const deletedToken = tokens[id];
@@ -75,7 +75,7 @@ exports.delete = (token) => {
  * expired ones it finds.
  * @returns {Promise} resolved with an associative of tokens that were expired
  */
-exports.removeExpired = (server) => {
+exports.removeExpired = server => {
   /*
   const keys    = Object.keys(tokens);
   const expired = keys.reduce((accumulator, key) => {
@@ -110,7 +110,7 @@ exports.removeExpired = (server) => {
  * Removes all access tokens.
  * @returns {Promise} resolved with all removed tokens returned
  */
-exports.removeAll = (server) => {
+exports.removeAll = server => {
   // const deletedTokens = tokens;
   // tokens              = Object.create(null);
   // return Promise.resolve(deletedTokens);
