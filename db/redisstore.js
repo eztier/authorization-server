@@ -96,6 +96,7 @@ RedisStore.prototype.findValueInHash = function (id, key) {
  * @return {[type]}       [description]
  */
 RedisStore.prototype.saveHash = function (obj) {
+  if (typeof obj.id === 'undefined') throw new Error(obj);
   const redis = this.redis;
   return new Promise((resolve, reject) => {
     redis.hmset(obj.id, toPairs(obj), function (err, results) {

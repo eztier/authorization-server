@@ -64,6 +64,6 @@ exports.find = (id, server) => server.store.findHash(id)
  * @returns {Promise} resolved promise with the client if found, otherwise undefined
  */
 exports.findByClientId = (clientId, server) => server.store.find(`client:${clientId}`)
-  .then(id => server.store.find(id))
+  .then(id => server.store.findHash(id))
   .then(client => Promise.resolve(client))
   .catch(reason => Promise.resolve(undefined));
