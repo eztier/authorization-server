@@ -117,7 +117,7 @@ exports.removeAll = server => {
   // 
   server.store.findAllInSet('tokens')
     .then(tokens => {
-      const fn = tokenId => {
+      const fn = token => {
         return server.store.removeFromSet('tokens', token)
           .then(server.store.delete(token))
           .catch(reason => Promise.resolve(undefined));

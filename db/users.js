@@ -27,7 +27,10 @@ const users = [{
  * @param   {String}   id - The unique id of the user to find
  * @returns {Promise} resolved user if found, otherwise resolves undefined
  */
-exports.find = id => Promise.resolve(users.find(user => user.id === id));
+// exports.find = id => Promise.resolve(users.find(user => user.id === id));
+exports.find = (id, server) => server.store.findHash(id)
+  .then(user => Promise.resolve(user))
+  .catch(reason => Promise.resolve(undefined));
 
 /**
  * Returns a user if it finds one, otherwise returns null if a user is not found.
@@ -35,5 +38,9 @@ exports.find = id => Promise.resolve(users.find(user => user.id === id));
  * @param   {Function} done     - The user if found, otherwise returns undefined
  * @returns {Promise} resolved user if found, otherwise resolves undefined
  */
-exports.findByUsername = username =>
-  Promise.resolve(users.find(user => user.username === username));
+// exports.findByUsername = username => Promise.resolve(users.find(user => user.username === username));
+
+exports.findByUsername = (username, server) => server.store.findHash(username)
+  .then(id => server.store.findHash(id))
+  .then(user => Promise.resolve(user))
+  .catch(reason => Promise.resolve(undefined));

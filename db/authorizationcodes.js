@@ -77,7 +77,7 @@ exports.removeAll = () => {
   // return Promise.resolve(deletedTokens);
   server.store.findAllInSet('codes')
     .then(codes => {
-      const fn = tokenId => {
+      const fn = authCode => {
         return server.store.removeFromSet('codes', authCode)
           .then(server.store.delete(authCode))
           .catch(reason => Promise.resolve(undefined));
