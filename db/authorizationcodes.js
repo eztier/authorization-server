@@ -10,17 +10,15 @@ const jwt = require('jsonwebtoken');
 /**
  * Authorization codes in-memory data structure which stores all of the authorization codes
  */
-// let codes = Object.create(null);
 
 /**
  * Returns an authorization code if it finds one, otherwise returns null if one is not found.
  * @param   {String}  token - The token to decode to get the id of the authorization token to find.
  * @returns {Promise} resolved with the authorization code if found, otherwise undefined
  */
-exports.find = (token) => {
+exports.find = (token, server) => {
   try {
     const id = jwt.decode(token).jti;
-    // return Promise.resolve(codes[id]);
     return server.store.findHash(id)
       .then(authCode => Promise.resolve(authCode))
       .catch(reason => Promise.resolve(undefined));
@@ -42,8 +40,6 @@ exports.find = (token) => {
  */
 exports.save = (code, clientID, redirectURI, userID, scope, server) => {
   const id = jwt.decode(code).jti;
-  // codes[id] = { clientID, redirectURI, userID, scope };
-  // return Promise.resolve(codes[id]);
   return server.store.addToSet('codes', id)
     .then(server.store.saveHash({ clientID, redirectURI, userID, scope }))
     .catch(Promise.resolve(undefined));
@@ -54,12 +50,9 @@ exports.save = (code, clientID, redirectURI, userID, scope, server) => {
  * @param   {String}  token - The authorization code to delete
  * @returns {Promise} resolved with the deleted value
  */
-exports.delete = (token) => {
+exports.delete = (token, server) => {
   try {
     const id = jwt.decode(token).jti;
-    // const deletedToken = codes[id];
-    // delete codes[id];
-    // return Promise.resolve(deletedToken);
     return server.store.removeFromSet('codes', id)
       .then(server.store.delete(id));
   } catch (error) {
@@ -71,10 +64,7 @@ exports.delete = (token) => {
  * Removes all authorization codes.
  * @returns {Promise} resolved with all removed authorization codes returned
  */
-exports.removeAll = () => {
-  // const deletedTokens = codes;
-  // codes               = Object.create(null);
-  // return Promise.resolve(deletedTokens);
+exports.removeAll = server => {
   server.store.findAllInSet('codes')
     .then(codes => {
       const fn = authCode => {

@@ -22,6 +22,44 @@ function RedisStore(opts) {
 }
 
 /**
+ * @details Basically Redis Get
+ * 
+ * @param  [description]
+ * @return [description]
+ */
+RedisStore.prototype.find = function (id) {
+  const redis = this.redis;
+  return new Promise((resolve, reject) => {
+    redis.get(id, function (err, results) {  
+      if (err) {
+        return reject(err);
+      }
+      resolve(results);
+    });
+  });  
+};
+
+/**
+ * @details Basically Redis Set
+ * 
+ * @param id [description]
+ * @param val [description]
+ * 
+ * @return [description]
+ */
+RedisStore.prototype.save = function (id, val) {
+  const redis = this.redis;
+  return new Promise((resolve, reject) => {
+    redis.set(id, val, function (err, results) {  
+      if (err) {
+        return reject(err);
+      }
+      resolve(results);
+    });
+  });  
+};
+
+/**
  * Find hashset by id.
  * @param  {[type]}   id [description]
  * @param  {Function} cb  [description]
@@ -129,14 +167,14 @@ RedisStore.prototype.load = function (server, options, req, cb) {
   const field = options.transactionField || 'transaction_id';
   const key = options.sessionKey || 'authorize';
 
-  let query = req.query || {};
-  let body = req.body || {};
-  let tid = query[field] || body[field];
+  const query = req.query || {};
+  const body = req.body || {};
+  const tid = query[field] || body[field];
 
   if (!tid) { return cb(new BadRequestError('Missing required parameter: ' + field)) }
   redis.get(getKey(this.prefix, key, tid), (err, res) => {
     if (err) return cb(err);
-    let txn = JSON.parse(res);
+    const txn = JSON.parse(res);
     if (!txn) { return cb(new ForbiddenError('Unable to load OAuth 2.0 transaction: ' + tid)); }
 
     server.deserializeClient(txn.client, (err, client) => {
@@ -163,7 +201,7 @@ RedisStore.prototype.store = function (server, options, req, txn, cb) {
   server.serializeClient(txn.client, (err, obj) => {
     if (err) { return cb(err); }
 
-    let tid = utils.uid(lenTxnID);
+    const tid = utils.uid(lenTxnID);
     txn.client = obj;
 
     const rk = getKey(this.prefix, key, tid)

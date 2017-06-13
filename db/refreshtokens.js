@@ -10,7 +10,6 @@ const jwt = require('jsonwebtoken');
 /**
  * Tokens in-memory data structure which stores all of the refresh tokens
  */
-// let tokens = Object.create(null);
 
 /**
  * Returns a refresh token if it finds one, otherwise returns null if one is not found.
@@ -18,14 +17,6 @@ const jwt = require('jsonwebtoken');
  * @returns {Promise} resolved with the token
  */
 exports.find = (token, server) => {
-  /*
-  try {
-    const id = jwt.decode(token).jti;
-    return Promise.resolve(tokens[id]);
-  } catch (error) {
-    return Promise.resolve(undefined);
-  }
-  */
   try {
     const id = jwt.decode(token).jti;
     return server.store.findHash(id)
@@ -49,8 +40,6 @@ exports.find = (token, server) => {
  */
 exports.save = (token, userID, clientID, scope, server) => {
   const id = jwt.decode(token).jti;
-  // tokens[id] = { userID, clientID, scope };
-  // return Promise.resolve(tokens[id]);
   return server.store.addToSet('tokens', id)
     .then(server.store.saveHash({ id, userID, clientID, scope }))
     .catch(Promise.resolve(undefined));
@@ -64,9 +53,6 @@ exports.save = (token, userID, clientID, scope, server) => {
 exports.delete = (token, server) => {
   try {
     const id = jwt.decode(token).jti;
-    // const deletedToken = tokens[id];
-    // delete tokens[id];
-    // return Promise.resolve(deletedToken);
     return server.store.removeFromSet('tokens', id)
       .then(server.store.delete(id));
   } catch (error) {
@@ -79,9 +65,6 @@ exports.delete = (token, server) => {
  * @returns {Promise} resolved with all removed tokens returned
  */
 exports.removeAll = server => {
-  // const deletedTokens = tokens;
-  // tokens              = Object.create(null);
-  // return Promise.resolve(deletedTokens);
   server.store.findAllInSet('tokens')
     .then(tokens => {
       const fn = token => {

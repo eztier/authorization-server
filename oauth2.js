@@ -17,7 +17,7 @@ const utils       = require('./utils');
 const validate    = require('./validate');
 
 // Override in-memory SessionStore
-const redisClient = redis.createClient(config.port, config.host, { no_ready_check: true });
+const redisClient = redis.createClient(config.redis.port, config.redis.host, { no_ready_check: true });
 const store = new db.RedisStore({ redis: redisClient });
 
 // create OAuth 2.0 server
@@ -38,7 +38,7 @@ const expiresIn = { expires_in : config.token.expiresIn };
  */
 server.grant(oauth2orize.grant.code((client, redirectURI, user, ares, done) => {
   const code = utils.createToken({ sub : user.id, exp : config.codeToken.expiresIn });
-  db.authorizationCodes.save(code, client.id, redirectURI, user.id, client.scope)
+  db.authorizationCodes.save(code, client.id, redirectURI, user.id, client.scope, server)
   .then(() => done(null, code))
   .catch(err => done(err));
 }));
@@ -241,3 +241,4 @@ server.deserializeClient((id, done) => {
   .catch(err => done(err));
 });
 
+exports.server = server;

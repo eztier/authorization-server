@@ -8,11 +8,6 @@ const jwt = require('jsonwebtoken');
 // (http://tools.ietf.org/html/rfc6750)
 
 /**
- * Tokens in-memory data structure which stores all of the access tokens
- */
-// let tokens = Object.create(null);
-
-/**
  * Returns an access token if it finds one, otherwise returns null if one is not found.
  * @param   {String}  token - The token to decode to get the id of the access token to find.
  * @returns {Promise} resolved with the token if found, otherwise resolved with undefined
@@ -20,7 +15,6 @@ const jwt = require('jsonwebtoken');
 exports.find = (token, server) => {
   try {
     const id = jwt.decode(token).jti;
-    // return Promise.resolve(tokens[id]);
     return server.store.findHash(id)
       .then(sessionToken => Promise.resolve(sessionToken))
       .catch(reason => Promise.resolve(undefined));     
@@ -42,9 +36,6 @@ exports.find = (token, server) => {
  */
 exports.save = (token, expirationDate, userID, clientID, scope = 'offline_access', server) => {
   const id = jwt.decode(token).jti;
-  // tokens[id] = { userID, expirationDate, clientID, scope };
-  // return Promise.resolve(tokens[id]);
-  
   const expirationDateVal = expirationDate.getTime();
 
   return server.store.addToSet('tokens', id)
@@ -60,9 +51,6 @@ exports.save = (token, expirationDate, userID, clientID, scope = 'offline_access
 exports.delete = (token, server) => {
   try {
     const id = jwt.decode(token).jti;
-    // const deletedToken = tokens[id];
-    // delete tokens[id];
-    // return Promise.resolve(deletedToken);
     return server.store.removeFromSet('tokens', id)
       .then(server.store.delete(id));
   } catch (error) {
@@ -76,19 +64,6 @@ exports.delete = (token, server) => {
  * @returns {Promise} resolved with an associative of tokens that were expired
  */
 exports.removeExpired = server => {
-  /*
-  const keys    = Object.keys(tokens);
-  const expired = keys.reduce((accumulator, key) => {
-    if (new Date() > tokens[key].expirationDate) {
-      const expiredToken = tokens[key];
-      delete tokens[key];
-      accumulator[key] = expiredToken; // eslint-disable-line no-param-reassign
-    }
-    return accumulator;
-  }, Object.create(null));
-  return Promise.resolve(expired);
-  */
- 
   server.store.findAllInSet('tokens')
     .then(tokens => {
       const fn = function removeIfNeeded(token) {
@@ -111,10 +86,6 @@ exports.removeExpired = server => {
  * @returns {Promise} resolved with all removed tokens returned
  */
 exports.removeAll = server => {
-  // const deletedTokens = tokens;
-  // tokens              = Object.create(null);
-  // return Promise.resolve(deletedTokens);
-  // 
   server.store.findAllInSet('tokens')
     .then(tokens => {
       const fn = token => {

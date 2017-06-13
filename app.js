@@ -18,7 +18,7 @@ const site           = require('./site');
 const token          = require('./token');
 const user           = require('./user');
 
-const redisClient = redis.createClient(config.port, config.host, { no_ready_check: true });
+const redisClient = redis.createClient(config.redis.port, config.redis.host, { no_ready_check: true });
 // const redisStore = new db.RedisStore({ redis: client });
 
 // Express configuration
@@ -97,7 +97,7 @@ app.use((err, req, res, next) => {
 // From time to time we need to clean up any expired tokens
 // in the database
 setInterval(() => {
-  db.accessTokens.removeExpired()
+  db.accessTokens.removeExpired(oauth2.server)
   .catch(err => console.error('Error trying to remove expired tokens:', err.stack));
 }, config.db.timeToCheckExpiredTokens * 1000);
 
@@ -109,6 +109,14 @@ const options = {
   key  : fs.readFileSync(path.join(__dirname, 'certs/privatekey.pem')),
   cert : fs.readFileSync(path.join(__dirname, 'certs/certificate.pem')),
 };
+
+redisClient.on('connect', () => { 
+  // Create test users and clients.
+  db.clients.createTestClients(oauth2.server)
+    .catch(e => console.log(e));
+  db.users.createTestUsers(oauth2.server)
+    .catch(e => console.log(e));
+});
 
 // Create our HTTPS server listening on port config.port.
 https.createServer(options, app).listen(config.port);
