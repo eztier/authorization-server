@@ -7,6 +7,7 @@ const { BasicStrategy }                    = require('passport-http');
 const { Strategy: ClientPasswordStrategy } = require('passport-oauth2-client-password');
 const { Strategy: BearerStrategy }         = require('passport-http-bearer');
 const validate                             = require('./validate');
+const {server} = require('./oauth2');
 
 /**
  * LocalStrategy
@@ -16,7 +17,7 @@ const validate                             = require('./validate');
  * a user is logged in before asking them to approve the request.
  */
 passport.use(new LocalStrategy((username, password, done) => {
-  db.users.findByUsername(username)
+  db.users.findByUsername(username, server)
   .then(user => validate.user(user, password))
   .then(user => done(null, user))
   .catch(() => done(null, false));
@@ -34,7 +35,7 @@ passport.use(new LocalStrategy((username, password, done) => {
  * the specification, in practice it is quite common.
  */
 passport.use(new BasicStrategy((clientId, clientSecret, done) => {
-  db.clients.findByClientId(clientId)
+  db.clients.findByClientId(clientId, server)
   .then(client => validate.client(client, clientSecret))
   .then(client => done(null, client))
   .catch(() => done(null, false));
@@ -48,7 +49,7 @@ passport.use(new BasicStrategy((clientId, clientSecret, done) => {
  * which accepts those credentials and calls done providing a client.
  */
 passport.use(new ClientPasswordStrategy((clientId, clientSecret, done) => {
-  db.clients.findByClientId(clientId)
+  db.clients.findByClientId(clientId, server)
   .then(client => validate.client(client, clientSecret))
   .then(client => done(null, client))
   .catch(() => done(null, false));
@@ -66,7 +67,7 @@ passport.use(new ClientPasswordStrategy((clientId, clientSecret, done) => {
  * illustrative purposes
  */
 passport.use(new BearerStrategy((accessToken, done) => {
-  db.accessTokens.find(accessToken)
+  db.accessTokens.find(accessToken, server)
   .then(token => validate.token(token, accessToken))
   .then(token => done(null, token, { scope: '*' }))
   .catch(() => done(null, false));
@@ -90,7 +91,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((id, done) => {
-  db.users.find(id)
+  db.users.find(id, server)
   .then(user => done(null, user))
   .catch(err => done(err));
 });

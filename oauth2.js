@@ -69,7 +69,7 @@ server.grant(oauth2orize.grant.token((client, user, ares, done) => {
  * authorized the code.
  */
 server.exchange(oauth2orize.exchange.code((client, code, redirectURI, done) => {
-  db.authorizationCodes.delete(code)
+  db.authorizationCodes.delete(code, server)
   .then(authCode => validate.authCode(code, authCode, client, redirectURI))
   .then(authCode => validate.generateTokens(authCode))
   .then((tokens) => {
@@ -92,7 +92,7 @@ server.exchange(oauth2orize.exchange.code((client, code, redirectURI, done) => {
  * application issues an access token on behalf of the user who authorized the code.
  */
 server.exchange(oauth2orize.exchange.password((client, username, password, scope, done) => {
-  db.users.findByUsername(username)
+  db.users.findByUsername(username, server)
   .then(user => validate.user(user, password))
   .then(user => validate.generateTokens({ scope, userID: user.id, clientID: client.id }))
   .then((tokens) => {
@@ -121,7 +121,7 @@ server.exchange(oauth2orize.exchange.clientCredentials((client, scope, done) => 
   const token      = utils.createToken({ sub : client.id, exp : config.token.expiresIn });
   const expiration = config.token.calculateExpirationDate();
   // Pass in a null for user id since there is no user when using this grant type
-  db.accessTokens.save(token, expiration, null, client.id, scope)
+  db.accessTokens.save(token, expiration, null, client.id, scope, server)
   .then(() => done(null, token, null, expiresIn))
   .catch(err => done(err));
 }));
@@ -134,7 +134,7 @@ server.exchange(oauth2orize.exchange.clientCredentials((client, scope, done) => 
  * token on behalf of the client who authorized the code
  */
 server.exchange(oauth2orize.exchange.refreshToken((client, refreshToken, scope, done) => {
-  db.refreshTokens.find(refreshToken)
+  db.refreshTokens.find(refreshToken, server)
   .then(foundRefreshToken => validate.refreshToken(foundRefreshToken, refreshToken, client))
   .then(foundRefreshToken => validate.generateToken(foundRefreshToken))
   .then(token => done(null, token, null, expiresIn))
@@ -161,7 +161,7 @@ server.exchange(oauth2orize.exchange.refreshToken((client, refreshToken, scope, 
 exports.authorization = [
   login.ensureLoggedIn(),
   server.authorization((clientID, redirectURI, scope, done) => {
-    db.clients.findByClientId(clientID)
+    db.clients.findByClientId(clientID, server)
     .then((client) => {
       if (client) {
         client.scope = scope; // eslint-disable-line no-param-reassign
@@ -178,7 +178,7 @@ exports.authorization = [
     // TODO:  Make a mechanism so that if this isn't a trusted client, the user can record that
     // they have consented but also make a mechanism so that if the user revokes access to any of
     // the clients then they will have to re-consent.
-    db.clients.findByClientId(req.query.client_id)
+    db.clients.findByClientId(req.query.client_id, server)
     .then((client) => {
       if (client != null && client.trustedClient && client.trustedClient === true) {
         // This is how we short call the decision like the dialog below does
@@ -236,7 +236,7 @@ exports.token = [
 server.serializeClient((client, done) => done(null, client.id));
 
 server.deserializeClient((id, done) => {
-  db.clients.find(id)
+  db.clients.find(id, server)
   .then(client => done(null, client))
   .catch(err => done(err));
 });
