@@ -38,7 +38,7 @@ exports.find = (token, server) => {
  * @param   {String}  scope    - The scope (optional)
  * @returns {Promise} resolved with the saved token
  */
-exports.save = (token, userID, clientID, scope, server) => {
+exports.save = (token, userID, clientID, scope = 'offline-access', server) => {
   const id = jwt.decode(token).jti;
   return server.store.addToSet('tokens', id)
     .then(server.store.saveHash({ id, userID, clientID, scope }))
