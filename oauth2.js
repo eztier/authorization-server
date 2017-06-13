@@ -172,7 +172,7 @@ exports.authorization = [
       //          been warned.
       return done(null, client, redirectURI);
     })
-    .catch(err => { console.error(err); return done(err) });
+    .catch(err => done(err));
   }), (req, res, next) => {
     // Render the decision dialog if the client isn't a trusted client
     // TODO:  Make a mechanism so that if this isn't a trusted client, the user can record that
