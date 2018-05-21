@@ -11,6 +11,9 @@ const validate = Object.create(null);
 /** Suppress tracing for things like unit testing */
 const suppressTrace = process.env.OAUTHRECIPES_SURPRESS_TRACE === 'true';
 
+/** The oauth2 singleton instance. **/
+const server = require('./oauth2server')
+
 /**
  * Log the message and throw it as an Error
  * @param   {String} msg - Message to log and throw
@@ -95,12 +98,12 @@ validate.token = (token, accessToken) => {
 
   // token is a user token
   if (token.userID != null) {
-    return db.users.find(token.userID)
+    return db.users.find(token.userID, server)
     .then(user => validate.userExists(user))
     .then(user => user);
   }
   // token is a client token
-  return db.clients.find(token.clientID)
+  return db.clients.find(token.clientID, server)
   .then(client => validate.clientExists(client))
   .then(client => client);
 };
@@ -162,7 +165,7 @@ validate.isRefreshToken = ({ scope }) => scope != null && scope.indexOf('offline
  */
 validate.generateRefreshToken = ({ userId, clientID, scope }) => {
   const refreshToken = utils.createToken({ sub : userId, exp : config.refreshToken.expiresIn });
-  return db.refreshTokens.save(refreshToken, userId, clientID, scope)
+  return db.refreshTokens.save(refreshToken, userId, clientID, scope, server)
   .then(() => refreshToken);
 };
 
@@ -176,7 +179,7 @@ validate.generateRefreshToken = ({ userId, clientID, scope }) => {
 validate.generateToken = ({ userID, clientID, scope }) => {
   const token      = utils.createToken({ sub : userID, exp : config.token.expiresIn });
   const expiration = config.token.calculateExpirationDate();
-  return db.accessTokens.save(token, expiration, userID, clientID, scope)
+  return db.accessTokens.save(token, expiration, userID, clientID, scope, server)
   .then(() => token);
 };
 

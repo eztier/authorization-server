@@ -19,7 +19,6 @@ const token          = require('./token');
 const user           = require('./user');
 
 const redisClient = redis.createClient(config.redis.port, config.redis.host, { no_ready_check: true });
-// const redisStore = new db.RedisStore({ redis: client });
 
 // Express configuration
 const app = express();
@@ -110,7 +109,7 @@ const options = {
   cert : fs.readFileSync(path.join(__dirname, 'certs/certificate.pem')),
 };
 
-redisClient.on('connect', () => { 
+redisClient.on('connect', () => {
   // Create test users and clients.
   db.clients.createTestClients(oauth2.server)
     .catch(e => console.log(e));

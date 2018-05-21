@@ -7,7 +7,6 @@
 // through a process of the user granting access, and the client exchanging
 // the grant for an access token.
 
-const redis = require('redis');
 const config      = require('./config');
 const db          = require('./db');
 const login       = require('connect-ensure-login');
@@ -16,14 +15,8 @@ const passport    = require('passport');
 const utils       = require('./utils');
 const validate    = require('./validate');
 
-// Override in-memory SessionStore
-const redisClient = redis.createClient(config.redis.port, config.redis.host, { no_ready_check: true });
-const store = new db.RedisStore({ redis: redisClient });
-
-// create OAuth 2.0 server
-const server = oauth2orize.createServer({ store });
-server.store = store;
-
+/** The oauth2 singleton instance. **/
+const server = require('./oauth2server')
 // Configured expiresIn
 const expiresIn = { expires_in : config.token.expiresIn };
 

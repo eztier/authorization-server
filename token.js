@@ -3,6 +3,9 @@
 const db       = require('./db');
 const validate = require('./validate');
 
+/** The oauth2 singleton instance. **/
+const server = require('./oauth2server')
+
 /**
  * This endpoint is for verifying a token.  This has the same signature to
  * Google's token verification system from:
@@ -26,10 +29,10 @@ const validate = require('./validate');
  */
 exports.info = (req, res) =>
   validate.tokenForHttp(req.query.access_token)
-  .then(() => db.accessTokens.find(req.query.access_token))
+  .then(() => db.accessTokens.find(req.query.access_token), server)
   .then(token => validate.tokenExistsForHttp(token))
   .then(token =>
-    db.clients.find(token.clientID)
+    db.clients.find(token.clientID, server)
     .then(client => validate.clientExistsForHttp(client))
     .then(client => ({ client, token })))
   .then(({ client, token }) => {
@@ -64,10 +67,10 @@ exports.info = (req, res) =>
  */
 exports.revoke = (req, res) =>
   validate.tokenForHttp(req.query.token)
-  .then(() => db.accessTokens.delete(req.query.token))
+  .then(() => db.accessTokens.delete(req.query.token, server))
   .then((token) => {
     if (token == null) {
-      return db.refreshTokens.delete(req.query.token);
+      return db.refreshTokens.delete(req.query.token, server);
     }
     return token;
   })

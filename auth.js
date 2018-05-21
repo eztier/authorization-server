@@ -7,7 +7,10 @@ const { BasicStrategy }                    = require('passport-http');
 const { Strategy: ClientPasswordStrategy } = require('passport-oauth2-client-password');
 const { Strategy: BearerStrategy }         = require('passport-http-bearer');
 const validate                             = require('./validate');
-const {server} = require('./oauth2');
+// const {server} = require('./oauth2');
+
+/** The oauth2 singleton instance. **/
+const server = require('./oauth2server')
 
 /**
  * LocalStrategy
