@@ -95,9 +95,8 @@ validate.clientExists = (client) => {
  */
 validate.token = (token, accessToken) => {
   utils.verifyToken(accessToken);
-
-  // token is a user token
-  if (token.userID != null) {
+  // token is a user token (Note: should not be null b/c we are saving it as empty string if no user.)
+  if (!!token.userID) {
     return db.users.find(token.userID, server)
     .then(user => validate.userExists(user))
     .then(user => user);
@@ -140,6 +139,7 @@ validate.refreshToken = (token, refreshToken, client) => {
  */
 validate.authCode = (code, authCode, client, redirectURI) => {
   utils.verifyToken(code);
+  console.log('authCode', authCode)
   if (client.id !== authCode.clientID) {
     validate.logAndThrow('AuthCode clientID does not match client id given');
   }

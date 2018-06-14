@@ -1,13 +1,16 @@
 {
   "name": "oauth2orize-authorization-server",
-  "version": "6.3.4",
-  "author": "Frank Hassanabad <frankhassanabad@gmail.com>",
+  "originalVersion": "6.3.4",
+  "version": "0.2.0",
+  "originalAuthor": "Frank Hassanabad <frankhassanabad@gmail.com>",
+  "author": "Henry Tao <htao@eztier.com>",
   "description": "OAuth2 security recipes and examples based on OAuth2orize",
   "license": "MIT",
   "main": "app.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/FrankHassanabad/Oauth2orizeRecipes.git"
+    "originalUrl": "https://github.com/FrankHassanabad/Oauth2orizeRecipes.git",
+    "url": "https://github.com/eztier/authorization-server.git"
   },
   "dependencies": {
     "body-parser": "^1.9.x",
@@ -57,6 +60,7 @@
     "authentication",
     "oauth2",
     "security",
-    "passport"
+    "passport",
+    "redis"
   ]
 }

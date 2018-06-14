@@ -17,15 +17,10 @@ const jwt = require('jsonwebtoken');
  * @returns {Promise} resolved with the token
  */
 exports.find = (token, server) => {
-  try {
-    const id = jwt.decode(token).jti;
-    return server.store.findHash(id)
-      .then(o => Promise.resolve(o))
-      .catch(reason => Promise.resolve(undefined));
-  } catch (error) {
-    return Promise.resolve(undefined);
-  }
-
+  const id = jwt.decode(token).jti;
+  return server.store.findHash(id)
+    .then(o => Promise.resolve(o))
+    .catch(reason => Promise.resolve(undefined));
 };
 
 /**
@@ -40,8 +35,12 @@ exports.find = (token, server) => {
  */
 exports.save = (token, userID, clientID, scope = 'offline-access', server) => {
   const id = jwt.decode(token).jti;
-  return server.store.addToSet('tokens', id)
-    .then(server.store.saveHash({ id, userID, clientID, scope }))
+  const newToken = { id, userID, clientID, scope };
+
+  return server.store.addToSet('refresh:tokens', id)
+    .then(a => server.store.saveHash(newToken))
+    .then(b => server.store.findHash(id))
+    .then(c => Promise.resolve(c))
     .catch(Promise.resolve(undefined));
 };
 
@@ -51,13 +50,17 @@ exports.save = (token, userID, clientID, scope = 'offline-access', server) => {
  * @returns {Promise} resolved with the deleted token
  */
 exports.delete = (token, server) => {
-  try {
-    const id = jwt.decode(token).jti;
-    return server.store.removeFromSet('tokens', id)
-      .then(server.store.delete(id));
-  } catch (error) {
-    return Promise.resolve(undefined);
-  }
+  let deletedToken;
+  const id = jwt.decode(token).jti;
+
+  return server.store.findHash(id)
+    .then(result => {
+      deletedToken = result;
+      return server.store.removeFromSet('refresh:tokens', id); 
+    })
+    .then(server.store.delete(id))
+    .then(a => Promise.resolve(deletedToken))
+    .catch(a => Promise.resolve(undefined));
 };
 
 /**
@@ -65,12 +68,13 @@ exports.delete = (token, server) => {
  * @returns {Promise} resolved with all removed tokens returned
  */
 exports.removeAll = server => {
-  server.store.findAllInSet('tokens')
+  server.store.findAllInSet('refresh:tokens')
     .then(tokens => {
       const fn = token => {
-        return server.store.removeFromSet('tokens', token)
-          .then(server.store.delete(token))
-          .catch(reason => Promise.resolve(undefined));
+        return server.store.removeFromSet('refresh:tokens', token)
+          .then(a => server.store.delete(token))
+          .then(a => Promise.resolve(token))
+          .catch(e => Promise.resolve(undefined));
       };
 
       return Promise.all(tokens.map(fn));

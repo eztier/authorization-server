@@ -8,8 +8,8 @@ const toPairs = obj => Object.keys(obj)
   .reduce(function(m, k) {
     // generate the array element
     m.push(k);
-    m.push(obj[k]);
-    return m; //[+k, obj[k]];
+    m.push(obj[k] ? obj[k] : '');
+    return m;
   }, []);
 
 function RedisStore(opts) {
@@ -44,8 +44,7 @@ RedisStore.prototype.find = function (id) {
  * 
  * @param id [description]
  * @param val [description]
- * 
- * @return [description]
+ * @return [Promise]
  */
 RedisStore.prototype.save = function (id, val) {
   const redis = this.redis;
@@ -60,10 +59,11 @@ RedisStore.prototype.save = function (id, val) {
 };
 
 /**
- * Find hashset by id.
+ * @details Basically Redis HGETALL
+ * 
+ * Find entire hashset by id.
  * @param  {[type]}   id [description]
- * @param  {Function} cb  [description]
- * @return {[type]}       [description]
+ * @return {[type]}   [Promise]
  */
 RedisStore.prototype.findHash = function (id) {
   const redis = this.redis;
@@ -77,6 +77,14 @@ RedisStore.prototype.findHash = function (id) {
   });  
 };
 
+/**
+ * @details Basically Redis HGET
+ * 
+ * Find hashset value by id and key.
+ * @param  {[type]}   id [description]
+ * @param  {Function} key  [description]
+ * @return {[type]}   [Promise]
+ */
 RedisStore.prototype.findValueInHash = function (id, key) {
   const redis = this.redis;
   return new Promise((resolve, reject) => {
@@ -90,10 +98,11 @@ RedisStore.prototype.findValueInHash = function (id, key) {
 };
 
 /**
- * Save JSON as hashset.
- * @param  {[type]}   obj [description]
- * @param  {Function} cb  [description]
- * @return {[type]}       [description]
+ * @details Basically Redis HMSET
+ * 
+ * Save JSON as hashset of pairs.
+ * @param  {[Object]}   obj [A JSON object.  It must contain the attribute "id".]
+ * @return {[Promise]}   [Promise]
  */
 RedisStore.prototype.saveHash = function (obj) {
   if (typeof obj.id === 'undefined') throw new Error(obj);
@@ -109,8 +118,10 @@ RedisStore.prototype.saveHash = function (obj) {
 };
 
 /**
+ * @details Basically Redis DEL
+ * 
  * Delete entire key.
- * @param  {[type]}   id [description]
+ * @param  {[String]}   id [description]
  * @param  {Function} cb [description]
  * @return {[type]}      [description]
  */
@@ -126,6 +137,14 @@ RedisStore.prototype.delete = function (id) {
   });
 };
 
+/**
+ * @details Basically Redis SADD
+ * 
+ * Delete entire key.
+ * @param  {[String]} set [description]
+ * @param  {[String]} val [description]
+ * @return {[Promise]}    [description]
+ */
 RedisStore.prototype.addToSet = function (set, val) {
   const redis = this.redis;
   return new Promise((resolve, reject) => {
@@ -138,6 +157,14 @@ RedisStore.prototype.addToSet = function (set, val) {
   });
 };
 
+/**
+ * @details Basically Redis SREM
+ * 
+ * Delete entire key.
+ * @param  {[String]} set [description]
+ * @param  {[String]} val [description]
+ * @return {[Promise]}    [description]
+ */
 RedisStore.prototype.removeFromSet = function (set, val) {
   const redis = this.redis;
   return new Promise((resolve, reject) => {
@@ -150,6 +177,13 @@ RedisStore.prototype.removeFromSet = function (set, val) {
   });
 };
 
+/**
+ * @details Basically Redis SMEMBERS
+ * 
+ * Delete entire key.
+ * @param  {[String]} set [description]
+ * @return {[Promise]}    [description]
+ */
 RedisStore.prototype.findAllInSet = function (set) {
   const redis = this.redis;
   return new Promise((resolve, reject) => {
@@ -162,6 +196,9 @@ RedisStore.prototype.findAllInSet = function (set) {
   });
 };
 
+/** 
+ * @details OAuth2Orize Store.load 
+*/
 RedisStore.prototype.load = function (server, options, req, cb) {
   const self = this;
   const redis = this.redis;
@@ -195,6 +232,9 @@ RedisStore.prototype.load = function (server, options, req, cb) {
   })
 };
 
+/** 
+ * @details OAuth2Orize Store.store 
+*/
 RedisStore.prototype.store = function (server, options, req, txn, cb) {
   const redis = this.redis;
   const lenTxnID = options.idLength || 8;
@@ -215,6 +255,9 @@ RedisStore.prototype.store = function (server, options, req, txn, cb) {
   })
 };
 
+/** 
+ * @details OAuth2Orize Store.update 
+*/
 RedisStore.prototype.update = function (server, options, req, tid, txn, cb) {
   const redis = this.redis;
   const key = options.sessionKey || 'authorize';
@@ -227,12 +270,18 @@ RedisStore.prototype.update = function (server, options, req, tid, txn, cb) {
   })
 };
 
+/** 
+ * @details OAuth2Orize Store.remove 
+*/
 RedisStore.prototype.remove = function (options, req, tid, cb) {
   const redis = this.redis;
   const key = options.sessionKey || 'authorize';
   redis.del(getKey(this.prefix, key, tid), () => cb());
 }
 
+/** 
+ * @details OAuth2Orize Store.getKey 
+*/
 function getKey(prefix, key, tid) {
   return `${prefix}${key}:${tid}`;
 };

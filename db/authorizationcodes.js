@@ -40,9 +40,13 @@ exports.find = (token, server) => {
  */
 exports.save = (code, clientID, redirectURI, userID, scope = 'offline-access', server) => {
   const id = jwt.decode(code).jti;
+  const newToken = { id, clientID, redirectURI, userID, scope };
+
   return server.store.addToSet('codes', id)
-    .then(server.store.saveHash({ id, clientID, redirectURI, userID, scope }))
-    .catch(Promise.resolve(undefined));
+    .then(d => server.store.saveHash(newToken))
+    .then(b => server.store.findHash(id))
+    .then(c => Promise.resolve(c))
+    .catch(a => Promise.resolve(undefined));
 };
 
 /**
@@ -51,13 +55,17 @@ exports.save = (code, clientID, redirectURI, userID, scope = 'offline-access', s
  * @returns {Promise} resolved with the deleted value
  */
 exports.delete = (token, server) => {
-  try {
-    const id = jwt.decode(token).jti;
-    return server.store.removeFromSet('codes', id)
-      .then(server.store.delete(id));
-  } catch (error) {
-    return Promise.resolve(undefined);
-  }
+  const id = jwt.decode(token).jti;
+  let authCode;
+
+  return server.store.findHash(id)
+    .then(result => {
+      authCode = result;
+      return server.store.removeFromSet('codes', id); 
+    })
+    .then(a => server.store.delete(id))
+    .then(a => Promise.resolve(authCode))
+    .catch(a => Promise.resolve(undefined));
 };
 
 /**
@@ -69,7 +77,8 @@ exports.removeAll = server => {
     .then(codes => {
       const fn = authCode => {
         return server.store.removeFromSet('codes', authCode)
-          .then(server.store.delete(authCode))
+          .then(a => server.store.delete(authCode))
+          .then(a => Promise.resolve(token))
           .catch(reason => Promise.resolve(undefined));
       };
 

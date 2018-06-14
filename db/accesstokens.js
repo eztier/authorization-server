@@ -13,14 +13,11 @@ const jwt = require('jsonwebtoken');
  * @returns {Promise} resolved with the token if found, otherwise resolved with undefined
  */
 exports.find = (token, server) => {
-  try {
-    const id = jwt.decode(token).jti;
-    return server.store.findHash(id)
-      .then(sessionToken => Promise.resolve(sessionToken))
-      .catch(reason => Promise.resolve(undefined));     
-  } catch (error) {
-    return Promise.resolve(undefined);
-  }
+  const id = jwt.decode(token).jti;
+
+  return server.store.findHash(id)
+    .then(sessionToken => Promise.resolve(sessionToken))
+    .catch(reason => Promise.resolve(undefined)); 
 };
 
 /**
@@ -37,10 +34,13 @@ exports.find = (token, server) => {
 exports.save = (token, expirationDate, userID, clientID, scope = 'offline_access', server) => {
   const id = jwt.decode(token).jti;
   const expirationDateVal = expirationDate.getTime();
+  const newToken = { id, userID, expirationDate: expirationDateVal, clientID, scope }
 
   return server.store.addToSet('tokens', id)
-    .then(server.store.saveHash({ id, userID, expirationDate: expirationDateVal, clientID, scope }))
-    .catch(Promise.resolve(undefined));
+    .then(a => server.store.saveHash(newToken))
+    .then(b => server.store.findHash(id))
+    .then(c => Promise.resolve(c))
+    .catch(reason => Promise.resolve(undefined));
 };
 
 /**
@@ -49,13 +49,17 @@ exports.save = (token, expirationDate, userID, clientID, scope = 'offline_access
  * @returns {Promise} resolved with the deleted token
  */
 exports.delete = (token, server) => {
-  try {
-    const id = jwt.decode(token).jti;
-    return server.store.removeFromSet('tokens', id)
-      .then(server.store.delete(id));
-  } catch (error) {
-    return Promise.resolve(undefined);
-  }
+  const id = jwt.decode(token).jti;
+  let deletedToken;
+  
+  return server.store.findHash(id)
+    .then(result => {
+      deletedToken = result;
+      return server.store.removeFromSet('tokens', id); 
+    })
+    .then(server.store.delete(id))
+    .then(a => Promise.resolve(deletedToken))
+    .catch(a => Promise.resolve(undefined));
 };
 
 /**
@@ -71,7 +75,9 @@ exports.removeExpired = server => {
           .then(expirationDate => {
             if (new Date() > new Date(expirationDate)) {
               return server.store.removeFromSet('tokens', token)
-                .then(server.store.delete(token));
+                .then(a => server.store.delete(token))
+                .then(a => Promise.resolve(token))
+                .catch(e => Promise.resolve(undefined));
             } else {
               return Promise.resolve(undefined);
             }
@@ -90,8 +96,9 @@ exports.removeAll = server => {
     .then(tokens => {
       const fn = token => {
         return server.store.removeFromSet('tokens', token)
-          .then(server.store.delete(token))
-          .catch(reason => Promise.resolve(undefined));
+          .then(a => server.store.delete(token))
+          .then(a => Promise.resolve(token))
+          .catch(e => Promise.resolve(undefined));
       };
 
       return Promise.all(tokens.map(fn));

@@ -25,14 +25,6 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(cookieParser());
 
-/*
-// Make our redisStore accessible to our router.
-app.use(function(req, res, next){
-  req.redisStore = redisStore;
-  next();
-});
-*/
-
 // Session Configuration
 app.use(expressSession({
   saveUninitialized : true,
