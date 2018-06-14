@@ -139,7 +139,6 @@ validate.refreshToken = (token, refreshToken, client) => {
  */
 validate.authCode = (code, authCode, client, redirectURI) => {
   utils.verifyToken(code);
-  console.log('authCode', authCode)
   if (client.id !== authCode.clientID) {
     validate.logAndThrow('AuthCode clientID does not match client id given');
   }
