@@ -73,7 +73,7 @@ exports.delete = (token, server) => {
  * @returns {Promise} resolved with all removed authorization codes returned
  */
 exports.removeAll = server => {
-  server.store.findAllInSet('codes')
+  return server.store.findAllInSet('codes')
     .then(codes => {
       const fn = authCode => {
         return server.store.removeFromSet('codes', authCode)

@@ -10,6 +10,8 @@
  * clientId:     A unique id of your client application
  * clientSecret: A unique password(ish) secret that is _best not_ shared with anyone but your
  *               client application and the authorization server.
+ * scope:        inform the client of the scope of the access token issued
+ * redirectUri:  This value must be enabled on authorization code grant
  *
  * Optionally you can set these properties which are
  *
@@ -24,17 +26,23 @@ const clients = [{
   name          : 'Samplr',
   clientId      : 'abc123',
   clientSecret  : 'ssh-secret',
+  scope         : '',
+  redirectUri   : ''
 }, {
   id            : 'client:2',
   name          : 'Samplr2',
   clientId      : 'xyz123',
   clientSecret  : 'ssh-password',
+  scope         : '',
+  redirectUri   : ''
 }, {
   id            : 'client:3',
   name          : 'Samplr3',
-  clientId      : 'trustedClient',
-  clientSecret  : 'ssh-otherpassword',
+  clientId      : 'axelrod',
+  clientSecret  : '9876543210',
   trustedClient : true,
+  scope         : 'Full Realm',
+  redirectUri   : 'http://localhost:8080/graphql'
 }];
 
 exports.saveClient = (client, server) => {

@@ -68,7 +68,7 @@ exports.delete = (token, server) => {
  * @returns {Promise} resolved with an associative of tokens that were expired
  */
 exports.removeExpired = server => {
-  server.store.findAllInSet('tokens')
+  return server.store.findAllInSet('tokens')
     .then(tokens => {
       const fn = function removeIfNeeded(token) {
         return server.store.findValueInHash(token, 'expirationDate')
@@ -92,7 +92,7 @@ exports.removeExpired = server => {
  * @returns {Promise} resolved with all removed tokens returned
  */
 exports.removeAll = server => {
-  server.store.findAllInSet('tokens')
+  return server.store.findAllInSet('tokens')
     .then(tokens => {
       const fn = token => {
         return server.store.removeFromSet('tokens', token)

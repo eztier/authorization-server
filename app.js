@@ -87,10 +87,11 @@ app.use((err, req, res, next) => {
 
 // From time to time we need to clean up any expired tokens
 // in the database
-setInterval(() => {
+//setInterval(() => {
   db.accessTokens.removeExpired(oauth2.server)
+  .then(a => Promise.resolve(a))
   .catch(err => console.error('Error trying to remove expired tokens:', err.stack));
-}, config.db.timeToCheckExpiredTokens * 1000);
+//}, config.db.timeToCheckExpiredTokens * 1000);
 
 // TODO: Change these for your own certificates.  This was generated through the commands:
 // openssl genrsa -out privatekey.pem 2048
