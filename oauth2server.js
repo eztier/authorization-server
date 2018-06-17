@@ -1,11 +1,16 @@
-const redis = require('redis');
+const redis       = require('redis');
 const config      = require('./config');
-const db          = require('./db');
+// const dbfunc      = require('./db');
+const RedisStore  = require('./db/redisstore')
 const oauth2orize = require('oauth2orize');
+
+// We are just getting a reference to the RedisStore class.
+// We do not need to pass an oauth server instance.
+// const db = dbfunc();
 
 // Override in-memory SessionStore with the RedisStore
 const redisClient = redis.createClient(config.redis.port, config.redis.host, { no_ready_check: true });
-const store = new db.RedisStore({ redis: redisClient });
+const store = new RedisStore({ redis: redisClient });
 
 /* 
   Create the OAuth 2.0 server.

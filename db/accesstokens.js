@@ -2,6 +2,8 @@
 
 const jwt = require('jsonwebtoken');
 
+const accessTokens = {};
+
 // The access tokens.
 // You will use these to access your end point data through the means outlined
 // in the RFC The OAuth 2.0 Authorization Framework: Bearer Token Usage
@@ -12,7 +14,9 @@ const jwt = require('jsonwebtoken');
  * @param   {String}  token - The token to decode to get the id of the access token to find.
  * @returns {Promise} resolved with the token if found, otherwise resolved with undefined
  */
-exports.find = (token, server) => {
+accessTokens.find = (token) => {
+  const server = accessTokens.server 
+  
   try {
     const id = jwt.decode(token).jti;
 
@@ -35,7 +39,9 @@ exports.find = (token, server) => {
  * @param   {String}  scope          - The scope (optional)
  * @returns {Promise} resolved with the saved token
  */
-exports.save = (token, expirationDate, userID, clientID, scope = 'offline_access', server) => {
+accessTokens.save = (token, expirationDate, userID, clientID, scope = 'offline_access') => {
+  const server = accessTokens.server 
+  
   try {
     const id = jwt.decode(token).jti;
     const expirationDateVal = expirationDate.getTime();
@@ -56,7 +62,9 @@ exports.save = (token, expirationDate, userID, clientID, scope = 'offline_access
  * @param   {String}  token - The token to decode to get the id of the access token to delete.
  * @returns {Promise} resolved with the deleted token
  */
-exports.delete = (token, server) => {
+accessTokens.delete = (token) => {
+  const server = accessTokens.server 
+  
   try {
     const id = jwt.decode(token).jti;
     let deletedToken;
@@ -79,7 +87,9 @@ exports.delete = (token, server) => {
  * expired ones it finds.
  * @returns {Promise} resolved with an associative of tokens that were expired
  */
-exports.removeExpired = server => {
+accessTokens.removeExpired = () => {
+  const server = accessTokens.server 
+  
   return server.store.findAllInSet('tokens')
     .then(tokens => {
       const fn = function removeIfNeeded(token) {
@@ -103,7 +113,9 @@ exports.removeExpired = server => {
  * Removes all access tokens.
  * @returns {Promise} resolved with all removed tokens returned
  */
-exports.removeAll = server => {
+accessTokens.removeAll = () => {
+  const server = accessTokens.server 
+  
   return server.store.findAllInSet('tokens')
     .then(tokens => {
       const fn = token => {
@@ -116,3 +128,8 @@ exports.removeAll = server => {
       return Promise.all(tokens.map(fn));
     });
 };
+
+const self = module.exports = function (server) {
+  accessTokens.server = server;
+  return accessTokens;
+}

@@ -1,7 +1,7 @@
 'use strict';
 
 const config  = require('./config');
-const db      = require('./db');
+const dbfunc  = require('./db');
 const utils   = require('./utils');
 const process = require('process');
 
@@ -13,6 +13,7 @@ const suppressTrace = process.env.OAUTHRECIPES_SURPRESS_TRACE === 'true';
 
 /** The oauth2 singleton instance. **/
 const server = require('./oauth2server')
+const db = dbfunc(server)
 
 /**
  * Log the message and throw it as an Error

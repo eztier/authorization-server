@@ -1,5 +1,7 @@
 'use strict';
 
+const users = {};
+
 /**
  * This is the configuration of the users that are allowed to connected to your authorization
  * server. These represent users of different client applications that can connect to the
@@ -10,7 +12,7 @@
  * password : The password of your user
  * name     : The name of your user
  */
-const users = [{
+const userset = [{
   id       : 'user:1',
   username : 'bob',
   password : 'secret',
@@ -22,25 +24,35 @@ const users = [{
   name     : 'Joe Davis',
 }];
 
-exports.saveUser = (user, server) => {
+users.saveUser = (user) => {
+  const server = users.server;
+
   return server.store.addToSet('users', user.id)
     .then(resp => server.store.saveHash(user))
     .then(resp => { const { username, id } = user; return server.store.save(`user:${username}`, id);}) // For findByUsername() lookup.
     .catch(Promise.resolve(undefined));
 };
 
-exports.createTestUsers = server => Promise.all(users.map(u => exports.saveUser(u, server)))
-  .then(() => console.log('All users added.'))
-  .catch(e => Promise.reject(e));
+users.createTestUsers = () => {
+  const server = users.server 
+  
+  return Promise.all(userset.map(u => users.saveUser(u, server)))
+    .then(() => console.log('All users added.'))
+    .catch(e => Promise.reject(e));
+}
 
 /**
  * Returns a user if it finds one, otherwise returns null if a user is not found.
  * @param   {String}   id - The unique id of the user to find
  * @returns {Promise} resolved user if found, otherwise resolves undefined
  */
-exports.find = (id, server) => server.store.findHash(id)
-  .then(user => Promise.resolve(user))
-  .catch(reason => Promise.resolve(undefined));
+users.find = (id) => {
+  const server = users.server;
+
+  return server.store.findHash(id)
+    .then(user => Promise.resolve(user))
+    .catch(reason => Promise.resolve(undefined));
+}
 
 /**
  * Returns a user if it finds one, otherwise returns null if a user is not found.
@@ -49,7 +61,16 @@ exports.find = (id, server) => server.store.findHash(id)
  * @returns {Promise} resolved user if found, otherwise resolves undefined
  */
 
-exports.findByUsername = (username, server) => server.store.find(`user:${username}`)
-  .then(id => server.store.findHash(id))
-  .then(user => Promise.resolve(user))
-  .catch(reason => Promise.resolve(undefined));
+users.findByUsername = (username) => {
+  const server = users.server;
+
+  return server.store.find(`user:${username}`)
+    .then(id => server.store.findHash(id))
+    .then(user => Promise.resolve(user))
+    .catch(reason => Promise.resolve(undefined));
+}
+
+const self = module.exports = function (server) {
+  users.server = server;
+  return users;
+}

@@ -2,6 +2,8 @@
 
 const jwt = require('jsonwebtoken');
 
+const authorizationCodes = {};
+
 // The authorization codes.
 // You will use these to get the access codes to get to the data in your endpoints as outlined
 // in the RFC The OAuth 2.0 Authorization Framework: Bearer Token Usage
@@ -16,7 +18,9 @@ const jwt = require('jsonwebtoken');
  * @param   {String}  token - The token to decode to get the id of the authorization token to find.
  * @returns {Promise} resolved with the authorization code if found, otherwise undefined
  */
-exports.find = (token, server) => {
+authorizationCodes.find = (token) => {
+  const server = authorizationCodes.server;
+
   try {
     const id = jwt.decode(token).jti;
     return server.store.findHash(id)
@@ -38,7 +42,9 @@ exports.find = (token, server) => {
  * @param   {String}  scope       - The scope (optional)
  * @returns {Promise} resolved with the saved token
  */
-exports.save = (code, clientID, redirectURI, userID, scope = 'offline-access', server) => {
+authorizationCodes.save = (code, clientID, redirectURI, userID, scope = 'offline-access') => {
+  const server = authorizationCodes.server;
+
   try {
     const id = jwt.decode(code).jti;
     const newToken = { id, clientID, redirectURI, userID, scope };
@@ -58,7 +64,9 @@ exports.save = (code, clientID, redirectURI, userID, scope = 'offline-access', s
  * @param   {String}  token - The authorization code to delete
  * @returns {Promise} resolved with the deleted value
  */
-exports.delete = (token, server) => {
+authorizationCodes.delete = (token) => {
+  const server = authorizationCodes.server;
+
   try {
     const id = jwt.decode(token).jti;
     let authCode;
@@ -80,7 +88,9 @@ exports.delete = (token, server) => {
  * Removes all authorization codes.
  * @returns {Promise} resolved with all removed authorization codes returned
  */
-exports.removeAll = server => {
+authorizationCodes.removeAll = () => {
+  const server = authorizationCodes.server;
+
   return server.store.findAllInSet('codes')
     .then(codes => {
       const fn = authCode => {
@@ -93,3 +103,8 @@ exports.removeAll = server => {
       return Promise.all(codes.map(fn));
     });
 };
+
+const self = module.exports = function (server) {
+  authorizationCodes.server = server;
+  return authorizationCodes;
+}

@@ -7,8 +7,9 @@ const toPairs = obj => Object.keys(obj)
   // iterate over them and generate the array
   .reduce(function(m, k) {
     // generate the array element
+    const v = obj[k];
     m.push(k);
-    m.push(obj[k] ? obj[k] : '');
+    m.push(v ? (v.constructor === Array ? JSON.stringify(v) : v) : '');
     return m;
   }, []);
 

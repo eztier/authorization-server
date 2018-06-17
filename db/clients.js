@@ -1,5 +1,7 @@
 'use strict';
 
+const clients = {};
+
 /**
  * This is the configuration of the clients that are allowed to connected to your authorization
  * server. These represent client applications that can connect. At a minimum you need the required
@@ -21,7 +23,7 @@
  * gets full scope access without the user having to make a decision to allow or disallow the scope
  * access.
  */
-const clients = [{
+const clientset = [{
   id            : 'client:1',
   name          : 'Samplr',
   clientId      : 'abc123',
@@ -45,25 +47,35 @@ const clients = [{
   redirectUri   : 'http://localhost:8080/graphql'
 }];
 
-exports.saveClient = (client, server) => {
+clients.saveClient = (client) => {
+  const server = clients.server;
+
   return server.store.addToSet('clients', client.id)
     .then(resp => server.store.saveHash(client))
     .then(resp => { const { clientId, id } = client; return server.store.save(`client:${clientId}`, id);}) // For findByClientId() lookup.
     .catch(Promise.resolve(undefined));
 };
 
-exports.createTestClients = server => Promise.all(clients.map(c => exports.saveClient(c, server)))
-  .then(()=> console.log('All clients added.'))
-  .catch(e => Promise.reject(e));
+clients.createTestClients = () => {
+  const server = clients.server; 
+  
+  return Promise.all(clientset.map(c => clients.saveClient(c, server)))
+    .then(()=> console.log('All clients added.'))
+    .catch(e => Promise.reject(e));
+}
 
 /**
  * Returns a client if it finds one, otherwise returns null if a client is not found.
  * @param   {String}   id   - The unique id of the client to find
  * @returns {Promise}  resolved promise with the client if found, otherwise undefined
  */
-exports.find = (id, server) => server.store.findHash(id)
-  .then(client => Promise.resolve(client))
-  .catch(reason => Promise.resolve(undefined));
+clients.find = (id) => {
+  const server = clients.server;
+
+  return server.store.findHash(id)
+    .then(client => Promise.resolve(client))
+    .catch(reason => Promise.resolve(undefined));
+}
 
 /**
  * Returns a client if it finds one, otherwise returns null if a client is not found.
@@ -71,7 +83,16 @@ exports.find = (id, server) => server.store.findHash(id)
  * @param   {Function} done     - The client if found, otherwise returns undefined
  * @returns {Promise} resolved promise with the client if found, otherwise undefined
  */
-exports.findByClientId = (clientId, server) => server.store.find(`client:${clientId}`)
-  .then(id => server.store.findHash(id))
-  .then(client => Promise.resolve(client))
-  .catch(reason => Promise.resolve(undefined));
+clients.findByClientId = (clientId) => {
+  const server = clients.server;
+
+  return server.store.find(`client:${clientId}`)
+    .then(id => server.store.findHash(id))
+    .then(client => Promise.resolve(client))
+    .catch(reason => Promise.resolve(undefined));
+}
+
+const self = module.exports = function (server) {
+  clients.server = server;
+  return clients;
+}

@@ -1,8 +1,14 @@
 'use strict';
 
-exports.accessTokens       = require('./accesstokens');
-exports.authorizationCodes = require('./authorizationcodes');
-exports.clients            = require('./clients');
-exports.refreshTokens      = require('./refreshtokens');
-exports.users              = require('./users');
-exports.RedisStore = require('./redisstore');
+function dbfunc(server) {
+  return {
+    accessTokens       : require('./accesstokens')(server),
+    authorizationCodes : require('./authorizationcodes')(server),
+    clients            : require('./clients')(server),
+    refreshTokens      : require('./refreshtokens')(server),
+    users              : require('./users')(server),
+    RedisStore         : require('./redisstore')
+  }
+}
+
+const self = module.exports = dbfunc

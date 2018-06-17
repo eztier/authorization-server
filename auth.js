@@ -1,6 +1,6 @@
 'use strict';
 
-const db                                   = require('./db');
+const dbfunc                                   = require('./db');
 const passport                             = require('passport');
 const { Strategy: LocalStrategy }          = require('passport-local');
 const { BasicStrategy }                    = require('passport-http');
@@ -12,6 +12,8 @@ const validate                             = require('./validate');
 /** The oauth2 singleton instance. **/
 const server = require('./oauth2server')
 
+const db = dbfunc(server);
+
 /**
  * LocalStrategy
  *
@@ -20,10 +22,10 @@ const server = require('./oauth2server')
  * a user is logged in before asking them to approve the request.
  */
 passport.use(new LocalStrategy((username, password, done) => {
-  db.users.findByUsername(username, server)
-  .then(user => validate.user(user, password))
-  .then(user => done(null, user))
-  .catch(() => done(null, false));
+  db.users.findByUsername(username)
+    .then(user => validate.user(user, password))
+    .then(user => done(null, user))
+    .catch(() => done(null, false));
 }));
 
 /**
@@ -38,10 +40,10 @@ passport.use(new LocalStrategy((username, password, done) => {
  * the specification, in practice it is quite common.
  */
 passport.use(new BasicStrategy((clientId, clientSecret, done) => {
-  db.clients.findByClientId(clientId, server)
-  .then(client => validate.client(client, clientSecret))
-  .then(client => done(null, client))
-  .catch(() => done(null, false));
+  db.clients.findByClientId(clientId)
+    .then(client => validate.client(client, clientSecret))
+    .then(client => done(null, client))
+    .catch(() => done(null, false));
 }));
 
 /**
@@ -52,10 +54,10 @@ passport.use(new BasicStrategy((clientId, clientSecret, done) => {
  * which accepts those credentials and calls done providing a client.
  */
 passport.use(new ClientPasswordStrategy((clientId, clientSecret, done) => {
-  db.clients.findByClientId(clientId, server)
-  .then(client => validate.client(client, clientSecret))
-  .then(client => done(null, client))
-  .catch(() => done(null, false));
+  db.clients.findByClientId(clientId)
+    .then(client => validate.client(client, clientSecret))
+    .then(client => done(null, client))
+    .catch(() => done(null, false));
 }));
 
 /**
@@ -70,10 +72,10 @@ passport.use(new ClientPasswordStrategy((clientId, clientSecret, done) => {
  * illustrative purposes
  */
 passport.use(new BearerStrategy((accessToken, done) => {
-  db.accessTokens.find(accessToken, server)
-  .then(token => validate.token(token, accessToken))
-  .then(token => done(null, token, { scope: '*' }))
-  .catch(() => done(null, false));
+  db.accessTokens.find(accessToken)
+    .then(token => validate.token(token, accessToken))
+    .then(token => done(null, token, { scope: '*' }))
+    .catch(() => done(null, false));
 }));
 
 // Register serialialization and deserialization functions.

@@ -4,7 +4,7 @@ const bodyParser     = require('body-parser');
 const client         = require('./client');
 const cookieParser   = require('cookie-parser');
 const config         = require('./config');
-const db             = require('./db');
+const dbfunc             = require('./db');
 const express        = require('express');
 const redis = require('redis');
 const expressSession = require('express-session');
@@ -17,6 +17,8 @@ const path           = require('path');
 const site           = require('./site');
 const token          = require('./token');
 const user           = require('./user');
+
+const db = dbfunc(oauth2.server);
 
 const redisClient = redis.createClient(config.redis.port, config.redis.host, { no_ready_check: true });
 
@@ -52,6 +54,7 @@ app.get('/account', site.account);
 app.get('/dialog/authorize',           oauth2.authorization);
 app.post('/dialog/authorize/decision', oauth2.decision);
 app.post('/oauth/token',               oauth2.token);
+app.post('/oauth/authorize',           oauth2.authorization); // result includes accessToken, accessTokenExpirationDate and refreshToken
 
 app.get('/api/userinfo',   user.info);
 app.get('/api/clientinfo', client.info);
@@ -88,7 +91,7 @@ app.use((err, req, res, next) => {
 // From time to time we need to clean up any expired tokens
 // in the database
 setInterval(() => {
-  db.accessTokens.removeExpired(oauth2.server)
+  db.accessTokens.removeExpired()
   .then(a => Promise.resolve(a))
   .catch(err => console.error('Error trying to remove expired tokens:', err.stack));
 }, config.db.timeToCheckExpiredTokens * 1000);
@@ -104,9 +107,9 @@ const options = {
 
 redisClient.on('connect', () => {
   // Create test users and clients.
-  db.clients.createTestClients(oauth2.server)
+  db.clients.createTestClients()
     .catch(e => console.log(e));
-  db.users.createTestUsers(oauth2.server)
+  db.users.createTestUsers()
     .catch(e => console.log(e));
 });
 

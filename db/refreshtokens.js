@@ -2,6 +2,8 @@
 
 const jwt = require('jsonwebtoken');
 
+const refreshTokens = {};
+
 // The refresh tokens.
 // You will use these to get access tokens to access your end point data through the means outlined
 // in the RFC The OAuth 2.0 Authorization Framework: Bearer Token Usage
@@ -16,7 +18,9 @@ const jwt = require('jsonwebtoken');
  * @param   {String}  token - The token to decode to get the id of the refresh token to find.
  * @returns {Promise} resolved with the token
  */
-exports.find = (token, server) => {
+refreshTokens.find = (token) => {
+  const server = refreshTokens.server;
+
   try {
     const id = jwt.decode(token).jti;
     return server.store.findHash(id)
@@ -37,7 +41,9 @@ exports.find = (token, server) => {
  * @param   {String}  scope    - The scope (optional)
  * @returns {Promise} resolved with the saved token
  */
-exports.save = (token, userID, clientID, scope = 'offline-access', server) => {
+refreshTokens.save = (token, userID, clientID, scope = 'offline-access') => {
+  const server = refreshTokens.server;
+
   try {
     const id = jwt.decode(token).jti;
     const newToken = { id, userID, clientID, scope };
@@ -57,7 +63,9 @@ exports.save = (token, userID, clientID, scope = 'offline-access', server) => {
  * @param   {String}  token - The token to decode to get the id of the refresh token to delete.
  * @returns {Promise} resolved with the deleted token
  */
-exports.delete = (token, server) => {
+refreshTokens.delete = (token) => {
+  const server = refreshTokens.server;
+
   try {
     let deletedToken;
     const id = jwt.decode(token).jti;
@@ -79,8 +87,10 @@ exports.delete = (token, server) => {
  * Removes all refresh tokens.
  * @returns {Promise} resolved with all removed tokens returned
  */
-exports.removeAll = server => {
-  server.store.findAllInSet('refresh:tokens')
+refreshTokens.removeAll = () => {
+  const server = refreshTokens.server;
+
+  return server.store.findAllInSet('refresh:tokens')
     .then(tokens => {
       const fn = token => {
         return server.store.removeFromSet('refresh:tokens', token)
@@ -92,3 +102,8 @@ exports.removeAll = server => {
       return Promise.all(tokens.map(fn));
     });
 };
+
+const self = module.exports = function (server) {
+  refreshTokens.server = server;
+  return refreshTokens;
+}
