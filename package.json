@@ -1,7 +1,7 @@
 {
   "name": "oauth2orize-authorization-server",
   "originalVersion": "6.3.4",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "originalAuthor": "Frank Hassanabad <frankhassanabad@gmail.com>",
   "author": "Henry Tao <htao@eztier.com>",
   "description": "OAuth2 security recipes and examples based on OAuth2orize",

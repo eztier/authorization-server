@@ -34,14 +34,14 @@ const clients = [{
   clientId      : 'xyz123',
   clientSecret  : 'ssh-password',
   scope         : '',
-  redirectUri   : ''
+  redirectUri   : 'http://localhost:8080/graphql'
 }, {
   id            : 'client:3',
   name          : 'Samplr3',
   clientId      : 'axelrod',
   clientSecret  : '9876543210',
   trustedClient : true,
-  scope         : 'Full Realm',
+  scope         : 'offline_access',
   redirectUri   : 'http://localhost:8080/graphql'
 }];
 

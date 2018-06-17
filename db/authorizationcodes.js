@@ -39,14 +39,18 @@ exports.find = (token, server) => {
  * @returns {Promise} resolved with the saved token
  */
 exports.save = (code, clientID, redirectURI, userID, scope = 'offline-access', server) => {
-  const id = jwt.decode(code).jti;
-  const newToken = { id, clientID, redirectURI, userID, scope };
+  try {
+    const id = jwt.decode(code).jti;
+    const newToken = { id, clientID, redirectURI, userID, scope };
 
-  return server.store.addToSet('codes', id)
-    .then(d => server.store.saveHash(newToken))
-    .then(b => server.store.findHash(id))
-    .then(c => Promise.resolve(c))
-    .catch(a => Promise.resolve(undefined));
+    return server.store.addToSet('codes', id)
+      .then(d => server.store.saveHash(newToken))
+      .then(b => server.store.findHash(id))
+      .then(c => Promise.resolve(c))
+      .catch(a => Promise.resolve(undefined));
+  } catch (e) {
+    return Promise.resolve(undefined);
+  }
 };
 
 /**
@@ -55,17 +59,21 @@ exports.save = (code, clientID, redirectURI, userID, scope = 'offline-access', s
  * @returns {Promise} resolved with the deleted value
  */
 exports.delete = (token, server) => {
-  const id = jwt.decode(token).jti;
-  let authCode;
+  try {
+    const id = jwt.decode(token).jti;
+    let authCode;
 
-  return server.store.findHash(id)
-    .then(result => {
-      authCode = result;
-      return server.store.removeFromSet('codes', id); 
-    })
-    .then(a => server.store.delete(id))
-    .then(a => Promise.resolve(authCode))
-    .catch(a => Promise.resolve(undefined));
+    return server.store.findHash(id)
+      .then(result => {
+        authCode = result;
+        return server.store.removeFromSet('codes', id); 
+      })
+      .then(a => server.store.delete(id))
+      .then(a => Promise.resolve(authCode))
+      .catch(a => Promise.resolve(undefined));
+  } catch (e) {
+    return Promise.resolve(undefined);
+  }
 };
 
 /**
