@@ -14,7 +14,7 @@
 #   "token_type" : "Bearer"
 # }
 
-server=https://localhost:3000
+server=https://localhost:4444
 username=bob
 password=secret
 clientid=trustedClient

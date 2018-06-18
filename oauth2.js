@@ -168,6 +168,9 @@ exports.authorization = [
         //          redirectURI provided by the client matches one registered with
         //          the server.  For simplicity, this example does not.  You have
         //          been warned.
+        if (client.redirectUri !== redirectURI)
+          return done({message: 'The provided redirect uri is not registered.'});
+
         return done(null, client, redirectURI);
       })
       .catch(err => done(err));
@@ -178,7 +181,7 @@ exports.authorization = [
     // the clients then they will have to re-consent.
     db.clients.findByClientId(req.query.client_id)
       .then((client) => {
-        if (client != null && client.trustedClient && client.trustedClient === true) {
+        if (client != null && client.trustedClient && !!client.trustedClient === true) {
           // This is how we short call the decision like the dialog below does
           server.decision({ loadTransaction: false }, (serverReq, callback) => {
             callback(null, { allow: true });

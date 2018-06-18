@@ -28,8 +28,9 @@ const clientset = [{
   name          : 'Samplr',
   clientId      : 'abc123',
   clientSecret  : 'ssh-secret',
-  scope         : '',
-  redirectUri   : ''
+  trustedClient : true,
+  scope         : 'offline_access',
+  redirectUri   : 'https://localhost:4444'
 }, {
   id            : 'client:2',
   name          : 'Samplr2',

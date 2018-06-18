@@ -98,12 +98,12 @@ validate.token = (token, accessToken) => {
   utils.verifyToken(accessToken);
   // token is a user token (Note: should not be null b/c we are saving it as empty string if no user.)
   if (!!token.userID) {
-    return db.users.find(token.userID, server)
+    return db.users.find(token.userID)
     .then(user => validate.userExists(user))
     .then(user => user);
   }
   // token is a client token
-  return db.clients.find(token.clientID, server)
+  return db.clients.find(token.clientID)
   .then(client => validate.clientExists(client))
   .then(client => client);
 };
@@ -165,7 +165,7 @@ validate.isRefreshToken = ({ scope }) => scope != null && scope.indexOf('offline
  */
 validate.generateRefreshToken = ({ userId, clientID, scope }) => {
   const refreshToken = utils.createToken({ sub : userId, exp : config.refreshToken.expiresIn });
-  return db.refreshTokens.save(refreshToken, userId, clientID, scope, server)
+  return db.refreshTokens.save(refreshToken, userId, clientID, scope)
   .then(() => refreshToken);
 };
 
@@ -179,7 +179,7 @@ validate.generateRefreshToken = ({ userId, clientID, scope }) => {
 validate.generateToken = ({ userID, clientID, scope }) => {
   const token      = utils.createToken({ sub : userID, exp : config.token.expiresIn });
   const expiration = config.token.calculateExpirationDate();
-  return db.accessTokens.save(token, expiration, userID, clientID, scope, server)
+  return db.accessTokens.save(token, expiration, userID, clientID, scope)
   .then(() => token);
 };
 
