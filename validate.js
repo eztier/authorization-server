@@ -191,10 +191,11 @@ validate.generateToken = ({ userID, clientID, scope }) => {
  * @returns {Promise} The resolved refresh and access tokens as an array
  */
 validate.generateTokens = (authCode) => {
-  if (validate.isRefreshToken(authCode)) {
+  const authCodeMod = utils.parseObject(authCode, ['scope'])
+  if (validate.isRefreshToken(authCodeMod)) {
     return Promise.all([
-      validate.generateToken(authCode),
-      validate.generateRefreshToken(authCode),
+      validate.generateToken(authCodeMod),
+      validate.generateRefreshToken(authCodeMod),
     ]);
   }
   return Promise.all([validate.generateToken(authCode)]);
@@ -208,7 +209,7 @@ validate.generateTokens = (authCode) => {
  */
 validate.tokenForHttp = token =>
   new Promise((resolve, reject) => {
-    try {
+    try {//
       utils.verifyToken(token);
     } catch (err) {
       const error  = new Error('invalid_token');

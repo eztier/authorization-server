@@ -33,8 +33,9 @@ const expiresIn = { expires_in : config.token.expiresIn };
  * which is bound to these values, and will be exchanged for an access token.
  */
 server.grant(oauth2orize.grant.code((client, redirectURI, user, ares, done) => {
-  const code = utils.createToken({ sub : user.id, exp : config.codeToken.expiresIn });
-  db.authorizationCodes.save(code, client.id, redirectURI, user.id, client.scope)
+  const userId = user ? user.id : '';
+  const code = utils.createToken({ sub : userId, exp : config.codeToken.expiresIn });
+  db.authorizationCodes.save(code, client.id, redirectURI, userId, client.scope)
     .then(() => done(null, code))
     .catch(err => done(err));
 }));
@@ -157,7 +158,14 @@ server.exchange(oauth2orize.exchange.refreshToken((client, refreshToken, scope, 
  * first, and rendering the `dialog` view.
  */
 exports.authorization = [
-  login.ensureLoggedIn(),
+  function(req, res, next) {
+    // Headless user.  (ie, non-browser user like curl or application.)
+    if (req.url.search(/^\/oauth\/authorize/) > -1)
+      return next();
+
+      login.ensureLoggedIn()(req, res, next);
+  },
+  // login.ensureLoggedIn(),
   server.authorization((clientID, redirectURI, scope, done) => {
     db.clients.findByClientId(clientID)
       .then((client) => {

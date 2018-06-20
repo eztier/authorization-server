@@ -40,3 +40,28 @@ exports.createToken = ({ exp = 3600, sub = '' } = {}) => {
  * @returns {Object} The token decoded and verified
  */
 exports.verifyToken = token => jwt.verify(token, publicKey);
+
+/**
+ * Parse Object and Array types.
+ */
+exports.parseObject = (any, fields = []) => {
+  const copy = Object.keys(any).reduce((m, k) => {    
+    if (fields.indexOf(k) != -1) {
+      if (any.hasOwnProperty(k)) {
+        try {
+          m[k] = JSON.parse(any[k])
+        } catch (e) {
+          m[k] = any[k];
+        }
+      } else {
+        m[k] = any[k];
+      }
+    } else {
+      m[k] = any[k]
+    }
+
+    return m;
+  }, {})
+
+  return copy;
+}

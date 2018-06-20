@@ -39,7 +39,7 @@ accessTokens.find = (token) => {
  * @param   {String}  scope          - The scope (optional)
  * @returns {Promise} resolved with the saved token
  */
-accessTokens.save = (token, expirationDate, userID, clientID, scope = 'offline_access') => {
+accessTokens.save = (token, expirationDate, userID, clientID, scope = ['offline_access']) => {
   const server = accessTokens.server 
   
   try {

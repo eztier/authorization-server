@@ -24,7 +24,7 @@ authorizationCodes.find = (token) => {
   try {
     const id = jwt.decode(token).jti;
     return server.store.findHash(id)
-      .then(authCode => Promise.resolve(authCode))
+      .then(authCode =>  Promise.resolve(authCode))
       .catch(reason => Promise.resolve(undefined));
   } catch (error) {
     return Promise.resolve(undefined);
@@ -42,7 +42,7 @@ authorizationCodes.find = (token) => {
  * @param   {String}  scope       - The scope (optional)
  * @returns {Promise} resolved with the saved token
  */
-authorizationCodes.save = (code, clientID, redirectURI, userID, scope = 'offline-access') => {
+authorizationCodes.save = (code, clientID, redirectURI, userID, scope = ['offline-access']) => {
   const server = authorizationCodes.server;
 
   try {

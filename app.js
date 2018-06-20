@@ -54,7 +54,7 @@ app.get('/account', site.account);
 app.get('/dialog/authorize',           oauth2.authorization);
 app.post('/dialog/authorize/decision', oauth2.decision);
 app.post('/oauth/token',               oauth2.token);
-app.post('/oauth/authorize',           oauth2.authorization); // result includes accessToken, accessTokenExpirationDate and refreshToken
+app.get('/oauth/authorize',           oauth2.authorization); // result includes accessToken, accessTokenExpirationDate and refreshToken
 
 app.get('/api/userinfo',   user.info);
 app.get('/api/clientinfo', client.info);
