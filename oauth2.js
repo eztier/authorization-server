@@ -163,7 +163,7 @@ exports.authorization = [
     if (req.url.search(/^\/oauth\/authorize/) > -1)
       return next();
 
-      login.ensureLoggedIn()(req, res, next);
+    login.ensureLoggedIn()(req, res, next);
   },
   // login.ensureLoggedIn(),
   server.authorization((clientID, redirectURI, scope, done) => {
@@ -176,8 +176,8 @@ exports.authorization = [
         //          redirectURI provided by the client matches one registered with
         //          the server.  For simplicity, this example does not.  You have
         //          been warned.
-        if (client.redirectUri !== redirectURI)
-          return done({message: 'The provided redirect uri is not registered.'});
+        if (client && client.redirectUri !== redirectURI)
+          return done({status: 403, message: 'The provided redirect uri is not registered.'});
 
         return done(null, client, redirectURI);
       })
