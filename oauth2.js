@@ -177,7 +177,7 @@ exports.authorization = [
         //          the server.  For simplicity, this example does not.  You have
         //          been warned.
         if (client && client.redirectUri !== redirectURI)
-          return done({status: 403, message: 'The provided redirect uri is not registered.'});
+          return done({status: 403, message: `The provided redirect uri: ${redirectURI} is not registered.`});
 
         return done(null, client, redirectURI);
       })

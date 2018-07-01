@@ -46,6 +46,14 @@ const clientset = [{
   trustedClient : true,
   scope         : 'offline_access',
   redirectUri   : 'http://localhost:8080/graphql'
+}, {
+  id            : 'client:4',
+  name          : 'Samplr4',
+  clientId      : 'android',
+  clientSecret  : '9876543210',
+  trustedClient : true,
+  scope         : 'offline_access',
+  redirectUri   : 'http://10.0.2.2:8080/graphql'
 }];
 
 clients.saveClient = (client) => {
