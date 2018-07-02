@@ -67,20 +67,22 @@ exports.info = (req, res) =>
  * @param   {Object}  res - The response
  * @returns {Promise} Returns the promise for testing
  */
-exports.revoke = (req, res) =>
-  validate.tokenForHttp(req.query.token)
-  .then(() => db.accessTokens.delete(req.query.token, server))
-  .then((token) => {
-    if (token == null) {
-      return db.refreshTokens.delete(req.query.token, server);
-    }
-    return token;
-  })
-  .then(tokenDeleted => validate.tokenExistsForHttp(tokenDeleted))
-  .then(() => {
-    res.json({});
-  })
-  .catch((err) => {
-    res.status(err.status);
-    res.json({ error: err.message });
-  });
+exports.revoke = (req, res) => {
+  console.log(req)
+  return validate.tokenForHttp(req.query.token)
+    .then(() => db.accessTokens.delete(req.query.token, server))
+    .then((token) => {
+      if (token == null) {
+        return db.refreshTokens.delete(req.query.token, server);
+      }
+      return token;
+    })
+    .then(tokenDeleted => validate.tokenExistsForHttp(tokenDeleted))
+    .then(() => {
+      res.json({});
+    })
+    .catch((err) => {
+      res.status(err.status);
+      res.json({ error: err.message });
+    });
+}

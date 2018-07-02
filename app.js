@@ -67,6 +67,14 @@ app.get('/api/tokeninfo', token.info);
 // https://developers.google.com/identity/protocols/OAuth2WebServer
 app.get('/api/revoke', token.revoke);
 
+/**
+  Identity Server insists on client_id being passed in the body,
+  but Google does not. According to the spec, Google is right
+  so defaulting to no client_id
+  https://tools.ietf.org/html/rfc7009#section-2.1
+**/
+app.post('/api/revoke', token.revoke)
+
 // static resources for stylesheets, images, javascript files
 app.use(express.static(path.join(__dirname, 'public')));
 

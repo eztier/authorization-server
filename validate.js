@@ -209,7 +209,7 @@ validate.generateTokens = (authCode) => {
  */
 validate.tokenForHttp = token =>
   new Promise((resolve, reject) => {
-    try {//
+    try {
       utils.verifyToken(token);
     } catch (err) {
       const error  = new Error('invalid_token');
