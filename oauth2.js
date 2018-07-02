@@ -89,6 +89,7 @@ server.exchange(oauth2orize.exchange.code((client, code, redirectURI, done) => {
  * application issues an access token on behalf of the user who authorized the code.
  */
 server.exchange(oauth2orize.exchange.password((client, username, password, scope, done) => {
+  console.log(client)
   db.users.findByUsername(username)
     .then(user => validate.user(user, password))
     .then(user => validate.generateTokens({ scope, userID: user.id, clientID: client.id }))

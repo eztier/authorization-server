@@ -214,7 +214,7 @@ validate.tokenForHttp = token =>
     } catch (err) {
       const error  = new Error('invalid_token');
       error.status = 400;
-      reject(error);
+      return reject(error);
     }
     resolve(token);
   });

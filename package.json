@@ -33,7 +33,7 @@
   "scripts": {
     "lint": "eslint *.js config db test",
     "start:win": "nodemon app.js --exec c:/node7/node",
-    "start": "nodemon app.js --exec node",
+    "start": "DEBUG=oauth2orize nodemon app.js --exec node",
     "test": "mocha test test/db test/config",
     "test:watch": "npm run test -- --watch",
     "test:integration": "mocha test/integration"

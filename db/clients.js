@@ -53,7 +53,7 @@ const clientset = [{
   clientSecret  : '9876543210',
   trustedClient : true,
   scope         : 'offline_access',
-  redirectUri   : 'http://10.0.2.2:8080/graphql'
+  redirectUri   : 'com.eztier.client1234://redirect'
 }];
 
 clients.saveClient = (client) => {
