@@ -17,3 +17,6 @@ if [ -z "${1}" ]; then
 fi
 
 curl --insecure "https://localhost:3000/api/revoke?token=${1}"
+
+# POST support for OpenID application/x-www-form-urlencoded
+curl -k --data "token=${1}" https://localhost:3000/api/revoke

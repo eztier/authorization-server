@@ -53,6 +53,12 @@ exports.info = (req, res) =>
  *
  * You call it like so
  * https://localhost:3000/api/revoke?token=someToken
+ * 
+ * POST is also supported
+ * https://localhost:3000/api/revoke
+ * Content-Type: application/x-www-form-urlencoded
+ * The body should be:
+ * token=[your-token-to-delete]
  *
  * If the token is valid you get returned a 200 and an empty object
  * {}
@@ -68,14 +74,15 @@ exports.info = (req, res) =>
  * @returns {Promise} Returns the promise for testing
  */
 exports.revoke = (req, res) => {
-  console.log(req)
-  return validate.tokenForHttp(req.query.token)
-    .then(() => db.accessTokens.delete(req.query.token, server))
+  const tokenToRevoke = req.query.token || req.body.token 
+  
+  return validate.tokenForHttp(tokenToRevoke)
+    .then(() => db.accessTokens.delete(tokenToRevoke, server))
     .then((token) => {
-      if (token == null) {
-        return db.refreshTokens.delete(req.query.token, server);
+      if (!token) {
+        return db.refreshTokens.delete(tokenToRevoke, server);
       }
-      return token;
+      return Promise.resolve(token);
     })
     .then(tokenDeleted => validate.tokenExistsForHttp(tokenDeleted))
     .then(() => {
