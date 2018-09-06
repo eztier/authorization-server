@@ -159,8 +159,8 @@ server.exchange(oauth2orize.exchange.refreshToken((client, refreshToken, scope, 
  */
 exports.authorization = [
   function(req, res, next) {
-    // Headless user.  (ie, non-browser user like curl or application.)
-    if (req.url.search(/^\/oauth\/authorize/) > -1)
+    // Headless user.  (ie, non-browser user like curl for testing.)
+    if (req.url.search(/^\/oauth\/authorize/) > -1 && process.env.NODE_ENV === 'debug')
       return next();
 
     login.ensureLoggedIn()(req, res, next);
